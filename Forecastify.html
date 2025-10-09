@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .weather-card {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        /* A clean, professional blue gradient background */
+        body {
+            background: #4a90e2; /* Fallback for old browsers */
+            background: -webkit-linear-gradient(to top, #4a90e2, #81c7f5); /* Chrome 10-25, Safari 5.1-6 */
+            background: linear-gradient(to top, #4a90e2, #81c7f5); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-4xl mx-auto p-4">
+        <div class="bg-white/20 rounded-2xl shadow-lg p-6 sm:p-8 weather-card">
+            <h1 class="text-3xl sm:text-4xl font-bold text-white text-center mb-6">Weather Forecast</h1>
+
+            <!-- Input Section -->
+            <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                <input type="text" id="cityInput" class="flex-grow p-3 rounded-lg border-2 border-transparent focus:border-blue-400 focus:outline-none transition duration-300 bg-white/30 text-white placeholder-gray-200" placeholder="Enter city name...">
+                <button id="getWeatherBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md">Get Weather</button>
+                <button id="getLocationBtn" title="Use my location" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 shadow-md flex items-center justify-center">
+                    <i class="fas fa-map-marker-alt"></i>
+                </button>
+            </div>
+            
+            <!-- Unit Toggle -->
+            <div class="flex items-center justify-center mb-6 text-white">
+                <span class="font-medium">°C</span>
+                <label for="unitToggle" class="relative inline-flex items-center cursor-pointer mx-3">
+                    <input type="checkbox" id="unitToggle" class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                </label>
+                <span class="font-medium">°F</span>
+            </div>
+
+
+            <!-- Error Message Display -->
+            <div id="errorMessage" class="hidden text-red-300 bg-red-800/50 p-3 rounded-lg text-center mb-6"></div>
+
+            <!-- Weather Display Section -->
+            <div id="weatherContainer" class="hidden">
+                <!-- Current Weather -->
+                <div class="text-white text-center mb-8">
+                    <h2 id="cityName" class="text-3xl font-semibold"></h2>
+                    <div class="flex items-center justify-center my-4">
+                        <img id="weatherIcon" src="" alt="Weather Icon" class="w-24 h-24">
+                        <p id="temperature" class="text-7xl font-bold ml-4"></p>
+                    </div>
+                    <p id="weatherDescription" class="text-xl capitalize"></p>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-white mb-8">
+                    <div class="bg-white/20 p-4 rounded-lg flex items-center justify-center flex-col weather-card">
+                        <i class="fas fa-wind text-2xl mb-2"></i>
+                        <p class="font-semibold">Wind Speed</p>
+                        <p id="windSpeed"></p>
+                    </div>
+                    <div class="bg-white/20 p-4 rounded-lg flex items-center justify-center flex-col weather-card">
+                        <i class="fas fa-tint text-2xl mb-2"></i>
+                        <p class="font-semibold">Humidity</p>
+                        <p id="humidity"></p>
+                    </div>
+                    <div class="bg-white/20 p-4 rounded-lg flex items-center justify-center flex-col weather-card">
+                        <i class="fas fa-eye text-2xl mb-2"></i>
+                        <p class="font-semibold">Visibility</p>
+                        <p id="visibility"></p>
+                    </div>
+                </div>
+
+                <!-- 5-Day Forecast -->
+                <div>
+                    <h3 class="text-2xl font-bold text-white text-center mb-4">5-Day Forecast</h3>
+                    <div id="forecastContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <!-- Forecast cards will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Windy.com Wave Map -->
+            <div id="waveMapContainer" class="mt-8">
+                <h3 class="text-2xl font-bold text-white text-center mb-4">Live Wave Map</h3>
+                <div class="rounded-lg overflow-hidden shadow-lg">
+                    <iframe width="100%" height="450" src="https://embed.windy.com/embed2.html?lat=22.290&lon=70.792&zoom=5&level=surface&overlay=waves&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1" frameborder="0"></iframe>
+                </div>
+            </div>
+
+             <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="hidden text-center text-white py-8">
+                <i class="fas fa-spinner fa-spin fa-3x"></i>
+                <p class="mt-2 text-lg">Fetching weather data...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const apiKey = 'b91cd844830322dcffca3f65ab4a8ef0';
+        const weatherCache = {}; // Simple object to cache API responses
+        const CACHE_EXPIRATION_MS = 10 * 60 * 1000; // 10 minutes
+
+        // --- STATE MANAGEMENT ---
+        let currentUnit = 'metric'; // 'metric' for Celsius, 'imperial' for Fahrenheit
+        let lastQuery = { type: 'city', value: 'Rajkot' }; // Keep track of the last search
+
+        // --- DOM ELEMENT REFERENCES ---
+        const cityInput = document.getElementById('cityInput');
+        const getWeatherBtn = document.getElementById('getWeatherBtn');
+        const getLocationBtn = document.getElementById('getLocationBtn');
+        const unitToggle = document.getElementById('unitToggle');
+        const weatherContainer = document.getElementById('weatherContainer');
+        const forecastContainer = document.getElementById('forecastContainer');
+        const errorMessage = document.getElementById('errorMessage');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const waveMapIframe = document.querySelector('#waveMapContainer iframe');
+
+        // --- EVENT LISTENERS ---
+        window.addEventListener('DOMContentLoaded', handlePageLoad);
+        getWeatherBtn.addEventListener('click', handleWeatherRequest);
+        getLocationBtn.addEventListener('click', handleLocationRequest);
+        unitToggle.addEventListener('change', handleUnitToggle);
+        cityInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                handleWeatherRequest();
+            }
+        });
+
+        // --- EVENT HANDLERS ---
+
+        /**
+         * On page load, try to get user's location, otherwise load a default city.
+         */
+        function handlePageLoad() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        fetchWeatherByCoords(latitude, longitude);
+                    },
+                    (error) => {
+                        console.warn("Geolocation denied. Defaulting to Rajkot.", error.message);
+                        showError("Location access denied. Showing weather for Rajkot.");
+                        fetchAndDisplayWeather('Rajkot');
+                    }
+                );
+            } else {
+                console.warn("Geolocation is not supported. Defaulting to Rajkot.");
+                fetchAndDisplayWeather('Rajkot');
+            }
+        }
+        
+        /**
+         * Handles request to get weather by city name.
+         */
+        function handleWeatherRequest() {
+            const city = cityInput.value.trim();
+            if (!city) {
+                showError('Please enter a city name.');
+                return;
+            }
+            fetchAndDisplayWeather(city);
+        }
+
+        /**
+         * Handles request to get weather by user's current location.
+         */
+        function handleLocationRequest() {
+            if (navigator.geolocation) {
+                loadingSpinner.classList.remove('hidden');
+                weatherContainer.classList.add('hidden');
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        fetchWeatherByCoords(latitude, longitude);
+                    },
+                    (error) => {
+                        loadingSpinner.classList.add('hidden');
+                        console.error('Error getting location:', error);
+                        showError('Unable to retrieve your location.');
+                    }
+                );
+            } else {
+                showError('Geolocation is not supported by your browser.');
+            }
+        }
+
+        /**
+         * Handles the unit change and re-fetches data.
+         */
+        function handleUnitToggle() {
+            currentUnit = unitToggle.checked ? 'imperial' : 'metric';
+            if (lastQuery.type === 'city') {
+                fetchAndDisplayWeather(lastQuery.value);
+            } else if (lastQuery.type === 'coords') {
+                fetchWeatherByCoords(lastQuery.value.lat, lastQuery.value.lon);
+            }
+        }
+
+        // --- DATA FETCHING ---
+
+        /**
+         * Fetches weather data by city name.
+         * @param {string} city - The name of the city.
+         */
+        async function fetchAndDisplayWeather(city) {
+            hideError();
+            weatherContainer.classList.add('hidden');
+            loadingSpinner.classList.remove('hidden');
+            lastQuery = { type: 'city', value: city };
+            
+            const cacheKey = `${city.toLowerCase()}-${currentUnit}`;
+            const cachedData = weatherCache[cacheKey];
+
+            if (cachedData && (Date.now() - cachedData.timestamp < CACHE_EXPIRATION_MS)) {
+                console.log(`Using cached data for ${city}`);
+                updateUI(cachedData.weather, cachedData.forecast);
+                loadingSpinner.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const [weatherResponse, forecastResponse] = await Promise.all([
+                    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=${currentUnit}`),
+                    fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=${currentUnit}`)
+                ]);
+
+                if (!weatherResponse.ok) throw new Error(`City not found. Status: ${weatherResponse.status}`);
+                if (!forecastResponse.ok) throw new Error(`Forecast not found. Status: ${forecastResponse.status}`);
+
+                const weatherData = await weatherResponse.json();
+                const forecastData = await forecastResponse.json();
+
+                weatherCache[cacheKey] = { weather: weatherData, forecast: forecastData, timestamp: Date.now() };
+                updateUI(weatherData, forecastData);
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                showError('Could not fetch weather data. Please check the city name.');
+            } finally {
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+        
+        /**
+         * Fetches weather data by geographic coordinates.
+         * @param {number} lat - Latitude.
+         * @param {number} lon - Longitude.
+         */
+        async function fetchWeatherByCoords(lat, lon) {
+            hideError();
+            weatherContainer.classList.add('hidden');
+            loadingSpinner.classList.remove('hidden');
+            lastQuery = { type: 'coords', value: { lat, lon } };
+            
+            const cacheKey = `${lat.toFixed(2)},${lon.toFixed(2)}-${currentUnit}`;
+            const cachedData = weatherCache[cacheKey];
+            
+            if (cachedData && (Date.now() - cachedData.timestamp < CACHE_EXPIRATION_MS)) {
+                console.log(`Using cached data for coords ${lat}, ${lon}`);
+                updateUI(cachedData.weather, cachedData.forecast);
+                loadingSpinner.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const [weatherResponse, forecastResponse] = await Promise.all([
+                    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${currentUnit}`),
+                    fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${currentUnit}`)
+                ]);
+
+                if (!weatherResponse.ok) throw new Error(`Weather data not found for coordinates. Status: ${weatherResponse.status}`);
+                if (!forecastResponse.ok) throw new Error(`Forecast data not found for coordinates. Status: ${forecastResponse.status}`);
+
+                const weatherData = await weatherResponse.json();
+                const forecastData = await forecastResponse.json();
+
+                weatherCache[cacheKey] = { weather: weatherData, forecast: forecastData, timestamp: Date.now() };
+                updateUI(weatherData, forecastData);
+            } catch (error) {
+                console.error('Error fetching weather data by coords:', error);
+                showError('Could not fetch weather data for your location.');
+            } finally {
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+
+        // --- UI UPDATES ---
+
+        /**
+         * Updates the entire UI with new weather and forecast data.
+         * @param {object} weather - Current weather data from API.
+         * @param {object} forecast - Forecast data from API.
+         */
+        function updateUI(weather, forecast) {
+            const tempUnit = currentUnit === 'metric' ? '°C' : '°F';
+            const speedUnit = currentUnit === 'metric' ? 'm/s' : 'mph';
+
+            document.getElementById('cityName').textContent = `${weather.name}, ${weather.sys.country}`;
+            document.getElementById('temperature').textContent = `${Math.round(weather.main.temp)}${tempUnit}`;
+            document.getElementById('weatherDescription').textContent = weather.weather[0].description;
+            document.getElementById('weatherIcon').src = `https://openweathermap.org/img/wn/${weather.weather[0].icon}@4x.png`;
+            document.getElementById('windSpeed').textContent = `${weather.wind.speed} ${speedUnit}`;
+            document.getElementById('humidity').textContent = `${weather.main.humidity}%`;
+            document.getElementById('visibility').textContent = `${(weather.visibility / (currentUnit === 'metric' ? 1000 : 1609)).toFixed(1)} ${currentUnit === 'metric' ? 'km' : 'mi'}`;
+            
+            const { lat, lon } = weather.coord;
+            waveMapIframe.src = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=7&level=surface&overlay=waves&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1`;
+
+            forecastContainer.innerHTML = '';
+            const dailyForecasts = forecast.list.filter(item => item.dt_txt.includes("12:00:00"));
+
+            dailyForecasts.forEach(day => {
+                const forecastCard = createForecastCard(day, tempUnit);
+                forecastContainer.appendChild(forecastCard);
+            });
+            
+            weatherContainer.classList.remove('hidden');
+        }
+
+        /**
+         * Creates an HTML element for a single day's forecast card.
+         * @param {object} dayData - The forecast data for a single day.
+         * @param {string} tempUnit - The temperature unit symbol ('°C' or '°F').
+         * @returns {HTMLElement} - The created forecast card element.
+         */
+        function createForecastCard(dayData, tempUnit) {
+            const card = document.createElement('div');
+            card.className = 'bg-white/20 p-4 rounded-lg text-center text-white weather-card';
+            const date = new Date(dayData.dt * 1000);
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+            card.innerHTML = `
+                <p class="font-semibold text-lg">${dayName}</p>
+                <img src="https://openweathermap.org/img/wn/${dayData.weather[0].icon}@2x.png" alt="Forecast Icon" class="mx-auto w-16 h-16">
+                <p class="font-bold text-xl">${Math.round(dayData.main.temp)}${tempUnit}</p>
+                <p class="text-sm capitalize">${dayData.weather[0].description}</p>
+            `;
+            return card;
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
+
